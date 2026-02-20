@@ -4,14 +4,14 @@
 REPO_DIR="/root/.openclaw/workspace/obsidian-notes"
 cd "$REPO_DIR" || exit 1
 
-# Получаем изменения
-git fetch origin
-
-# Попытка слияния (fast-forward или merge). Если конфликт — прерываем.
-git merge origin/main --ff-only || {
-  echo "WARNING: Merge conflict or diverged branches. Manual resolution required."
-  exit 1
-}
+# Если есть remote origin, пытаемся обновиться (fast-forward)
+if git remote | grep -q origin; then
+  git fetch origin
+  git merge origin/main --ff-only || {
+    echo "WARNING: Merge conflict or diverged branches. Manual resolution required."
+    exit 1
+  }
+fi
 
 # Добавляем локальные изменения
 git add .
@@ -24,8 +24,6 @@ if ! git diff-index --quiet HEAD --; then
   # Пушим, если есть origin
   if git remote | grep -q origin; then
     git push origin main
-  else
-    echo "No remote 'origin' configured. Skipping push."
   fi
 fi
 
