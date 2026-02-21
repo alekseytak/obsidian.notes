@@ -7,7 +7,9 @@ cd "$REPO_DIR" || exit 1
 # Если есть remote origin, пытаемся обновиться (fast-forward)
 if git remote | grep -q origin; then
   git fetch origin
-  git merge origin/main --ff-only || {
+  # Определяем ветку по умолчанию remote (main или master)
+  DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+  git merge "origin/$DEFAULT_BRANCH" --ff-only || {
     echo "WARNING: Merge conflict or diverged branches. Manual resolution required."
     exit 1
   }
@@ -23,7 +25,8 @@ if ! git diff-index --quiet HEAD --; then
 
   # Пушим, если есть origin
   if git remote | grep -q origin; then
-    git push origin main
+    DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+    git push origin "$DEFAULT_BRANCH"
   fi
 fi
 
